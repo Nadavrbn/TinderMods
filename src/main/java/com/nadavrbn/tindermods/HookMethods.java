@@ -24,36 +24,47 @@ import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
 public class HookMethods implements IXposedHookLoadPackage {
 
     public static final String PACKAGE_NAME = "com.nadavrbn.tindermods";
-
+    public static final String TINDER_PACKAGE_NAME = "com.tinder";
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
-        XposedBridge.log("module is working");
-        hookAllConstructors(findClass("com.tinder.model.User", loadPackageParam.classLoader), new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Date pingTime = (Date)getObjectField(param.thisObject, "mPingTime");
-                String bio = (String)getObjectField(param.thisObject, "mBio");
+        if (loadPackageParam.packageName.equals(TINDER_PACKAGE_NAME)) {
+            XposedBridge.log("[TinderMods] Hooked into Tinder");
 
-                Context moduleContext = AndroidAppHelper.currentApplication().createPackageContext(PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY);
-                java.text.DateFormat timeFormatter = DateFormat.getTimeFormat(moduleContext);
-                java.text.DateFormat dateFormatter = DateFormat.getDateFormat(moduleContext);
+            hookAllConstructors(findClass("com.tinder.model.User", loadPackageParam.classLoader), new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    XposedBridge.log("[TinderMods] Hooked into Tinder user constructor");
+                    Date pingTime = (Date) getObjectField(param.thisObject, "mPingTime");
+                    String bio = (String) getObjectField(param.thisObject, "mBio");
 
-                String timeString = timeFormatter.format(pingTime);
+                    if (pingTime == null) {
+                        XposedBridge.log("[TinderMods] User's ping time is null");
+                    }
+                    if (bio == null) {
+                        XposedBridge.log("[TinderMods] User's bio is null");
+                    }
 
-                int dayDifference = daysSinceToday(pingTime);
-                String dayString;
-                if (dayDifference == 0)
-                    dayString = "";
-                else if (dayDifference == 1)
-                    dayString = "yesterday ";
-                else
-                    dayString = dateFormatter.format(pingTime) + " ";
+                    Context moduleContext = AndroidAppHelper.currentApplication().createPackageContext(PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY);
+                    java.text.DateFormat timeFormatter = DateFormat.getTimeFormat(moduleContext);
+                    java.text.DateFormat dateFormatter = DateFormat.getDateFormat(moduleContext);
 
-                String updateBio = String.format("Last seen %sat %s \n %s", dayString, timeString, bio);
+                    String timeString = timeFormatter.format(pingTime);
 
-                setObjectField(param.thisObject, "mBio", updateBio);
-            }
-        });
+                    int dayDifference = daysSinceToday(pingTime);
+                    String dayString;
+                    if (dayDifference == 0)
+                        dayString = "";
+                    else if (dayDifference == 1)
+                        dayString = "yesterday ";
+                    else
+                        dayString = dateFormatter.format(pingTime) + " ";
+
+                    String updateBio = String.format("Last seen %sat %s \n %s", dayString, timeString, bio);
+
+                    setObjectField(param.thisObject, "mBio", updateBio);
+                }
+            });
+        }
     }
 
 
