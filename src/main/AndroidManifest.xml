@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nadavrbn.tindermods"
-    android:versionCode="2"
-    android:versionName="1.0.1">
+    android:versionCode="3"
+    android:versionName="1.0.2">
 
     <application
         android:allowBackup="true"
@@ -25,7 +25,7 @@
             android:value="Restores the last seen time on your matches.." />
         <meta-data
             android:name="xposedminversion"
-            android:value="30" />
+            android:value="54*" />
     </application>
 
 </manifest>
